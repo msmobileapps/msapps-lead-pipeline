@@ -10,26 +10,45 @@ async function getBlobStore(name) {
 }
 
 // ── CORS ──────────────────────────────────────────────
-function buildHeaders(allowedOrigin = '*') {
+const ALLOWED_ORIGINS = [
+  'https://msapps-lead-pipeline.netlify.app',
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://localhost:8888',
+]
+
+function isAllowedOrigin(origin) {
+  if (!origin) return false
+  if (ALLOWED_ORIGINS.includes(origin)) return true
+  // Allow Netlify deploy previews (branch deploys and deploy previews)
+  if (/^https:\/\/[a-z0-9-]+--msapps-lead-pipeline\.netlify\.app$/.test(origin)) return true
+  return false
+}
+
+function buildHeaders(requestOrigin) {
+  const origin = isAllowedOrigin(requestOrigin) ? requestOrigin : ALLOWED_ORIGINS[0]
   return {
-    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Origin': origin,
     'Access-Control-Allow-Methods': 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type,Authorization,X-API-Key',
     'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Max-Age': '86400',
+    'Vary': 'Origin',
   }
 }
 
 export function handleCors(request) {
   const method = request.method?.toUpperCase?.() || request.method
   if (method !== 'OPTIONS') return null
-  return new Response(null, { status: 204, headers: buildHeaders() })
+  const origin = request.headers?.get?.('Origin') || ''
+  return new Response(null, { status: 204, headers: buildHeaders(origin) })
 }
 
-export function jsonResponse(payload, status = 200) {
+export function jsonResponse(payload, status = 200, request) {
+  const origin = request?.headers?.get?.('Origin') || ''
   return new Response(JSON.stringify(payload), {
     status,
-    headers: { 'Content-Type': 'application/json', ...buildHeaders() },
+    headers: { 'Content-Type': 'application/json', ...buildHeaders(origin) },
   })
 }
 
