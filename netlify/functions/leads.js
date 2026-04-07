@@ -13,7 +13,7 @@ export default async (request) => {
 
   try {
     if (request.method === 'GET' || request.method === 'HEAD') {
-      const events = await listEvents({ daysBack: 14, daysForward: 30, maxResults: 50 })
+      const events = await listEvents({ daysBack: 14, daysForward: 0, maxResults: 50 })
       const leads = sortLeads(mapEventsToLeads(events))
       const stats = computeStats(leads)
 
