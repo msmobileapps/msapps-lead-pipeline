@@ -230,17 +230,23 @@ export function sortLeads(leads) {
 
 /**
  * Compute pipeline stats from leads.
+ * BUG-004 fix: Exclude upsale leads from pipeline total to match the UI count.
+ * Upsale leads (priority === 'upsale', colorId '10') are tracked separately
+ * and intentionally excluded from the main pipeline count in the UI.
  */
 export function computeStats(leads) {
-  const total = leads.length
-  const active = leads.filter(l => !['נסגר בהצלחה', 'לא רלוונטי'].includes(l.stage)).length
-  const hot = leads.filter(l => l.priority === 'hot').length
-  const stale = leads.filter(l => l.isStale && !['נסגר בהצלחה', 'לא רלוונטי'].includes(l.stage)).length
+  const pipelineLeads = leads.filter(l => l.priority !== 'upsale')
+  const total = pipelineLeads.length
+  const totalWithUpsale = leads.length  // raw count including upsale, for reference
+
+  const active = pipelineLeads.filter(l => !['נסגר בהצלחה', 'לא רלוונטי'].includes(l.stage)).length
+  const hot = pipelineLeads.filter(l => l.priority === 'hot').length
+  const stale = pipelineLeads.filter(l => l.isStale && !['נסגר בהצלחה', 'לא רלוונטי'].includes(l.stage)).length
 
   const byStage = {}
   for (const stage of STAGES) {
-    byStage[stage] = leads.filter(l => l.stage === stage).length
+    byStage[stage] = pipelineLeads.filter(l => l.stage === stage).length
   }
 
-  return { total, active, hot, stale, totalLeads: total, totalActive: active, totalHot: hot, totalStale: stale, byStage, stages: STAGES }
+  return { total, totalWithUpsale, active, hot, stale, totalLeads: total, totalActive: active, totalHot: hot, totalStale: stale, byStage, stages: STAGES }
 }
