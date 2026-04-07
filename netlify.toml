@@ -1,0 +1,16 @@
+[build]
+  publish = "dist"
+  functions = "netlify/functions"
+  command = "npm install && cp -r public dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["@netlify/blobs"]

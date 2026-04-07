@@ -1,0 +1,12 @@
+{
+  "name": "msapps-lead-pipeline",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "cp -r public dist"
+  },
+  "dependencies": {
+    "@netlify/blobs": "^10.7.4"
+  }
+}
