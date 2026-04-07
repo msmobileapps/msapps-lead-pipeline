@@ -4,8 +4,8 @@
  * POST: Actions — changeColor, moveDate, updateNotes, closeLead
  */
 import { handleCors, jsonResponse } from './_lib/store.js'
-import { listEvents, updateEventColor, moveEvent, updateEventDescription } from './_lib/gcal.js'
-import { mapEventsToLeads, sortLeads, computeStats } from './_lib/lead-mapper.js'
+import { listEvents, updateEventColor, moveEvent, updateEventDescription, createEvent, deleteEvent } from './_lib/gcal.js'
+import { mapEventsToLeads, sortLeads, computeStats, eventToLead } from './_lib/lead-mapper.js'
 
 export default async (request) => {
   const cors = handleCors(request)
@@ -83,6 +83,48 @@ export default async (request) => {
         const desc = reason ? `שלב: לא רלוונטי\nעדכון: ${new Date().toISOString().split('T')[0]} — ${reason}` : 'שלב: לא רלוונטי'
         const updated = await updateEventDescription(eventId, desc)
         return jsonResponse({ success: true, event: updated })
+      }
+
+      // ── CRUD actions (STD: create, update-status, delete) ──
+      if (action === 'create') {
+        const name = payload.name ?? body.name
+        const company = payload.company ?? body.company
+        const date = payload.date ?? body.date
+        const colorId = payload.colorId ?? body.colorId
+        if (!name) return jsonResponse({ error: 'Missing name for lead creation' }, 400)
+        const summary = company ? `${name} — ${company}` : name
+        const description = payload.description ?? body.description ?? ''
+        const event = await createEvent({ summary, description, date, colorId })
+        const lead = eventToLead(event)
+        return jsonResponse({ success: true, lead, event })
+      }
+
+      if (action === 'update-status') {
+        const status = payload.status ?? body.status
+        const colorId = payload.colorId ?? body.colorId
+        const note = payload.note ?? body.note
+        if (!eventId) return jsonResponse({ error: 'Missing eventId' }, 400)
+        const results = {}
+        // Update color if provided
+        if (colorId) {
+          results.colorUpdate = await updateEventColor(eventId, colorId)
+        }
+        // Update description with status/note if provided
+        if (status || note) {
+          const today = new Date().toISOString().split('T')[0]
+          const lines = []
+          if (status) lines.push(`שלב: ${status}`)
+          if (note) lines.push(`עדכון ${today}: ${note}`)
+          const description = lines.join('\n')
+          results.descUpdate = await updateEventDescription(eventId, description)
+        }
+        return jsonResponse({ success: true, ...results })
+      }
+
+      if (action === 'delete') {
+        if (!eventId) return jsonResponse({ error: 'Missing eventId' }, 400)
+        const result = await deleteEvent(eventId)
+        return jsonResponse({ success: true, ...result })
       }
 
       return jsonResponse({ error: `Unknown action: ${action}` }, 400)

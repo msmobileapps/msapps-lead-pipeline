@@ -163,6 +163,56 @@ export async function updateEventDescription(eventId, description) {
 }
 
 /**
+ * Create a new calendar event (lead).
+ */
+export async function createEvent({ summary, description, date, colorId }) {
+  const token = await getAccessToken()
+  const startDate = date || new Date().toISOString().split('T')[0]
+  const body = {
+    summary,
+    description: description || '',
+    start: { date: startDate },
+    end: { date: startDate },
+  }
+  if (colorId) body.colorId = String(colorId)
+
+  const res = await fetch(
+    'https://www.googleapis.com/calendar/v3/calendars/primary/events',
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    }
+  )
+  if (!res.ok) {
+    const errBody = await res.text().catch(() => '')
+    throw new Error(`Failed to create event: ${res.status} — ${errBody.slice(0, 200)}`)
+  }
+  return res.json()
+}
+
+/**
+ * Delete a calendar event.
+ */
+export async function deleteEvent(eventId) {
+  const token = await getAccessToken()
+  const res = await fetch(
+    `https://www.googleapis.com/calendar/v3/calendars/primary/events/${eventId}`,
+    {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  )
+  if (!res.ok && res.status !== 410) {
+    throw new Error(`Failed to delete event: ${res.status}`)
+  }
+  return { deleted: true, eventId }
+}
+
+/**
  * Check if GCal connection is healthy.
  */
 export async function checkHealth() {
