@@ -169,8 +169,9 @@ export function eventToLead(event) {
     // Stage & pipeline
     stage,
 
-    // Heat / priority (frontend uses heatColor + heatLabel)
+    // Heat / priority (frontend uses heatColor + heatLabel + heat)
     priority: colorInfo.priority,
+    heat: colorInfo.priority,       // alias — frontend CSS map keyed on .heat
     heatColor: colorInfo.heatColor,
     heatLabel: colorInfo.heatLabel,
     // Also keep priorityLabel/priorityColor for backward compat
@@ -196,8 +197,9 @@ export function eventToLead(event) {
     nextStep: parsed.nextSteps.length > 0 ? parsed.nextSteps[0] : '',
     notes: parsed.rawNotes,
 
-    // GCal link
+    // GCal link — expose as both gcalLink (API consumers) and htmlLink (frontend)
     gcalLink: event.htmlLink || '',
+    htmlLink: event.htmlLink || '',
     created: event.created,
     updated: event.updated,
   }
