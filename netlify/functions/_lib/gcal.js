@@ -256,3 +256,31 @@ export async function checkHealth() {
     }
   }
 }
+
+/**
+ * Search calendar events by text query across all time (no date restriction).
+ * Uses GCal API `q` parameter for full-text search on summary/description.
+ */
+export async function searchEvents(query, { maxResults = 50 } = {}) {
+  const token = await getAccessToken()
+
+  const params = new URLSearchParams({
+    q: query,
+    maxResults: String(maxResults),
+    singleEvents: 'true',
+    orderBy: 'updated',
+  })
+
+  const res = await fetch(
+    `https://www.googleapis.com/calendar/v3/calendars/primary/events?${params}`,
+    { headers: { Authorization: `Bearer ${token}` } }
+  )
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => '')
+    throw new Error(`Calendar search error: ${res.status} — ${body.slice(0, 200)}`)
+  }
+
+  const data = await res.json()
+  return data.items || []
+}

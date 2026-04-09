@@ -4,7 +4,7 @@
  * POST: Actions — changeColor, moveDate, updateNotes, closeLead
  */
 import { handleCors, jsonResponse } from './_lib/store.js'
-import { listEvents, updateEventColor, moveEvent, updateEventDescription, createEvent, deleteEvent } from './_lib/gcal.js'
+import { listEvents, searchEvents, updateEventColor, moveEvent, updateEventDescription, createEvent, deleteEvent } from './_lib/gcal.js'
 import { mapEventsToLeads, sortLeads, computeStats, eventToLead } from './_lib/lead-mapper.js'
 
 export default async (request) => {
@@ -13,7 +13,19 @@ export default async (request) => {
 
   try {
     if (request.method === 'GET' || request.method === 'HEAD') {
-      const events = await listEvents({ daysBack: 14, daysForward: 0, maxResults: 50 })
+      const url = new URL(request.url)
+      const searchQuery = url.searchParams.get('search') || ''
+      const daysBack = parseInt(url.searchParams.get('daysBack') || '14', 10)
+      const limit = parseInt(url.searchParams.get('limit') || '50', 10)
+
+      let events
+      if (searchQuery.trim()) {
+        // Full-text search across all time via GCal API q param
+        events = await searchEvents(searchQuery.trim(), { maxResults: limit })
+      } else {
+        events = await listEvents({ daysBack, daysForward: 0, maxResults: limit })
+      }
+
       const leads = sortLeads(mapEventsToLeads(events))
       const stats = computeStats(leads)
 
@@ -22,6 +34,7 @@ export default async (request) => {
         leads,
         stats,
         total: leads.length,
+        searchQuery: searchQuery || null,
         fetchedAt: new Date().toISOString(),
       })
     }
