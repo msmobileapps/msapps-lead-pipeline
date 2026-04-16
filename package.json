@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "build": "cp -r public dist"
+    "build": "rm -rf dist && cp -r public dist"
   },
   "dependencies": {
     "@netlify/blobs": "^10.7.4"
