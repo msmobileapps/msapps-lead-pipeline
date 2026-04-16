@@ -32,6 +32,27 @@ const STAGES = [
 const SKIP_EVENTS = ['Social Media', 'מכרזים']
 
 /**
+ * Extract contact email from event attendees (skip calendar owner).
+ */
+function extractEmail(event) {
+  const attendees = event.attendees || []
+  for (const a of attendees) {
+    if (a.self) continue
+    if (a.email && !a.email.includes('calendar.google.com')) return a.email
+  }
+  return ''
+}
+
+/**
+ * Extract phone number from text (Israeli formats).
+ */
+function extractPhone(text) {
+  if (!text) return ''
+  const m = text.match(/(?:\+972|972|05|07|03|02|04|08|09|077)[-\s]?\d[\d\s-]{6,12}/)
+  return m ? m[0].replace(/[\s-]/g, '') : ''
+}
+
+/**
  * Strip HTML tags from description text.
  */
 function stripHtml(html) {
@@ -202,6 +223,18 @@ export function eventToLead(event) {
     htmlLink: event.htmlLink || '',
     created: event.created,
     updated: event.updated,
+
+    // Attachments (Google Drive/Docs files linked to the event)
+    attachments: (event.attachments || []).map(a => ({
+      title: a.title || a.fileUrl || '',
+      url: a.fileUrl || '',
+      mimeType: a.mimeType || '',
+      iconLink: a.iconLink || '',
+    })),
+
+    // Contact info extracted from attendees and notes
+    contactEmail: extractEmail(event),
+    contactPhone: extractPhone(parsed.rawNotes || ''),
   }
 }
 

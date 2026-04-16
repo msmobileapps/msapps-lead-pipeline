@@ -72,6 +72,8 @@ export async function listEvents({ daysBack = 14, daysForward = 30, maxResults =
     singleEvents: 'true',
     orderBy: 'updated',
   })
+  // Request attachments and attendees
+  params.set('fields', 'items(id,summary,description,colorId,start,end,htmlLink,created,updated,attachments,attendees)')
 
   const res = await fetch(
     `https://www.googleapis.com/calendar/v3/calendars/primary/events?${params}`,
@@ -270,6 +272,8 @@ export async function searchEvents(query, { maxResults = 50 } = {}) {
     singleEvents: 'true',
     orderBy: 'updated',
   })
+  // Request attachments and attendees
+  params.set('fields', 'items(id,summary,description,colorId,start,end,htmlLink,created,updated,attachments,attendees)')
 
   const res = await fetch(
     `https://www.googleapis.com/calendar/v3/calendars/primary/events?${params}`,
