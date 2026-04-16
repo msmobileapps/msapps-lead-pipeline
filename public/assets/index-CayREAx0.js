@@ -239,4 +239,209 @@ var EXEC=[{icon:"📅",t:"סנכרון לידים",d:"משיכת לידים מ-G
 if(N&&Q.length===0)return f.jsx("div",{className:"flex items-center justify-center h-48 text-gray-400",children:f.jsxs("div",{className:"text-center",children:[f.jsx("div",{className:"animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-3"}),f.jsx("p",{children:"טוען משימות..."})]})});
 return f.jsxs("div",{className:"space-y-6",children:[f.jsxs("div",{className:"flex items-center justify-between",children:[f.jsxs("div",{children:[f.jsx("h2",{className:"text-xl font-bold text-gray-900",children:"Lead Pipeline — Agent Task"}),f.jsx("p",{className:"text-sm text-gray-500 mt-0.5",children:"ניהול לידים אוטומטי מבוסס Google Calendar"})]}),f.jsxs("div",{className:"flex gap-2",children:[f.jsx("button",{onClick:function(){window.location.reload()},className:"px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200",children:"🔄 רענן"}),f.jsx("button",{className:"px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700",children:"▶️ הרץ עכשיו"})]})]}),f.jsx("div",{className:"grid grid-cols-4 gap-4",children:[{l:"סה״כ לידים",v:L.total,c:"bg-blue-50 text-blue-700 border-blue-200"},{l:"פעילים",v:L.active,c:"bg-green-50 text-green-700 border-green-200"},{l:"חמים",v:L.hot,c:"bg-red-50 text-red-700 border-red-200"},{l:"דורשים טיפול",v:L.stale,c:"bg-amber-50 text-amber-700 border-amber-200"}].map(function(e,i){return f.jsxs("div",{className:"p-4 rounded-xl border "+e.c,children:[f.jsx("p",{className:"text-2xl font-bold",children:e.v}),f.jsx("p",{className:"text-xs font-medium mt-1",children:e.l})]},i)})}),f.jsx("div",{children:f.jsxs("div",{className:"bg-white rounded-xl border border-gray-200 overflow-hidden",children:[f.jsx("div",{className:"px-4 py-3 bg-gray-50 border-b border-gray-200",children:f.jsx("h3",{className:"font-semibold text-gray-700",children:"טבלת לידים"})}),f.jsx("div",{className:"overflow-x-auto",children:f.jsxs("table",{className:"w-full text-sm",children:[f.jsx("thead",{children:f.jsxs("tr",{className:"border-b border-gray-100 bg-gray-50/50",children:[f.jsx("th",{className:"text-right px-4 py-3 font-medium text-gray-600",children:"#"}),f.jsx("th",{className:"text-right px-4 py-3 font-medium text-gray-600",children:"ליד"}),f.jsx("th",{className:"text-right px-4 py-3 font-medium text-gray-600",children:"שלב"}),f.jsx("th",{className:"text-right px-4 py-3 font-medium text-gray-600",children:"חום"}),f.jsx("th",{className:"text-right px-4 py-3 font-medium text-gray-600",children:"תאריך"}),f.jsx("th",{className:"text-right px-4 py-3 font-medium text-gray-600",children:"ימים ללא עדכון"}),f.jsx("th",{className:"text-right px-4 py-3 font-medium text-gray-600",children:"צעד הבא"}),f.jsx("th",{className:"text-right px-4 py-3 font-medium text-gray-600",children:"GCal"})]})}),f.jsx("tbody",{children:Q.map(function(e,i){return f.jsxs("tr",{className:"border-b border-gray-50 hover:bg-gray-50/50 transition-colors",children:[f.jsx("td",{className:"px-4 py-3 text-gray-400 text-xs",children:i+1}),f.jsx("td",{className:"px-4 py-3 font-medium text-gray-900",children:e.name}),f.jsx("td",{className:"px-4 py-3 text-gray-600",children:e.stage}),f.jsx("td",{className:"px-4 py-3",children:f.jsx("span",{className:"px-2 py-0.5 rounded-full text-xs text-white font-medium",style:{backgroundColor:e.heatColor},children:e.heatLabel})}),f.jsx("td",{className:"px-4 py-3 text-gray-500 text-xs",children:e.dateFormatted}),f.jsx("td",{className:"px-4 py-3",children:e.isStale?f.jsxs("span",{className:"text-amber-600 font-medium text-xs",children:["⚠️ ",e.daysSinceUpdate," ימים"]}):f.jsxs("span",{className:"text-gray-500 text-xs",children:[e.daysSinceUpdate," ימים"]})}),f.jsx("td",{className:"px-4 py-3 text-gray-600 text-xs max-w-[200px] truncate",children:e.nextSteps&&e.nextSteps.length>0?e.nextSteps[0]:"—"}),f.jsx("td",{className:"px-4 py-3",children:e.htmlLink?f.jsx("a",{href:e.htmlLink,target:"_blank",rel:"noopener noreferrer",className:"text-blue-600 hover:text-blue-800 text-xs font-medium",children:"📅 Event"}):"—"})]},"r"+i)})})]})})]})})
 ,f.jsxs("div",{children:[f.jsx("h3",{className:"font-semibold text-gray-700 mb-3",children:"תהליך ביצוע"}),f.jsx("div",{className:"grid grid-cols-5 gap-3",children:EXEC.map(function(e,i){return f.jsxs("div",{className:"bg-white rounded-xl border border-gray-200 p-4 text-center",children:[f.jsx("div",{className:"text-2xl mb-2",children:e.icon}),f.jsx("p",{className:"font-medium text-sm text-gray-800",children:e.t}),f.jsx("p",{className:"text-xs text-gray-500 mt-1",children:e.d})]},i)})})]})]})}
-function V0({onClose:o,onCreate:z}){const[N,d]=X.useState(""),[O,j]=X.useState(""),[Q,L]=X.useState(""),[_,S]=X.useState("11"),[M,D]=X.useState(""),[K,gl]=X.useState(!1),[$,k]=X.useState(null),F=[{id:"11",label:"🔴 חם",color:"#ef4444"},{id:"10",label:"🟢 אפסייל",color:"#22c55e"},{id:"5",label:"🟡 בינוני",color:"#f59e0b"},{id:"8",label:"⚪ קר",color:"#6b7280"}],pl=async()=>{if(!N.trim()){k("שם הליד חובה");return}gl(!0),k(null);try{await z({name:N.trim(),company:O.trim()||void 0,date:Q||void 0,colorId:_,description:M.trim()||void 0}),o()}catch(Z){k(Z.message)}finally{gl(!1)}};return f.jsxs("div",{className:"fixed inset-0 z-50 flex items-center justify-center",dir:"rtl",children:[f.jsx("div",{className:"absolute inset-0 bg-black/30",onClick:o}),f.jsxs("div",{className:"relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 p-6",children:[f.jsxs("div",{className:"flex items-center justify-between mb-5",children:[f.jsx("h2",{className:"text-lg font-bold text-gray-900",children:"ליד חדש"}),f.jsx("button",{onClick:o,className:"p-1.5 rounded-lg hover:bg-gray-100 text-gray-400",children:"✕"})]}),f.jsxs("div",{className:"space-y-4",children:[f.jsxs("div",{children:[f.jsx("label",{className:"block text-sm font-medium text-gray-700 mb-1",children:"שם הליד *"}),f.jsx("input",{type:"text",value:N,onChange:Z=>d(Z.target.value),placeholder:"שם הלקוח / החברה",className:"w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent",autoFocus:!0})]}),f.jsxs("div",{children:[f.jsx("label",{className:"block text-sm font-medium text-gray-700 mb-1",children:"חברה"}),f.jsx("input",{type:"text",value:O,onChange:Z=>j(Z.target.value),placeholder:"שם החברה (אופציונלי)",className:"w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm"})]}),f.jsxs("div",{className:"grid grid-cols-2 gap-4",children:[f.jsxs("div",{children:[f.jsx("label",{className:"block text-sm font-medium text-gray-700 mb-1",children:"תאריך"}),f.jsx("input",{type:"date",value:Q,onChange:Z=>L(Z.target.value),className:"w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm"})]}),f.jsxs("div",{children:[f.jsx("label",{className:"block text-sm font-medium text-gray-700 mb-1",children:"רמת חום"}),f.jsx("div",{className:"flex gap-1.5 mt-1",children:F.map(Z=>f.jsx("button",{onClick:()=>S(Z.id),className:`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${_===Z.id?"ring-2 ring-offset-1 ring-blue-500 border-gray-400":"border-gray-200 hover:bg-gray-50"}`,children:Z.label},Z.id))})]})]}),f.jsxs("div",{children:[f.jsx("label",{className:"block text-sm font-medium text-gray-700 mb-1",children:"הערות"}),f.jsx("textarea",{value:M,onChange:Z=>D(Z.target.value),placeholder:"הערות ראשוניות, פרטי קשר...",rows:3,className:"w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm resize-none"})]})]}),$&&f.jsx("div",{className:"mt-3 p-2 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm",children:$}),f.jsxs("div",{className:"flex gap-3 mt-5",children:[f.jsx("button",{onClick:pl,disabled:K,className:"flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors",children:K?"יוצר ליד...":"צור ליד"}),f.jsx("button",{onClick:o,className:"px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors",children:"ביטול"})]})]})]})}function wy(){const[o,z]=X.useState(Qn.pipeline),[Z0,z0]=X.useState(!1),N=Ky(),d=Jy();return f.jsxs("div",{className:"min-h-screen flex",dir:"rtl",children:[f.jsx(hy,{view:o,setView:z,onRefresh:N.refresh}),f.jsxs("main",{className:"flex-1 p-6 overflow-y-auto",children:[f.jsxs("header",{className:"mb-6 flex items-center justify-between",children:[f.jsxs("div",{children:[f.jsx("h1",{className:"text-2xl font-bold text-gray-900",children:"MSApps Lead Pipeline"}),f.jsx("p",{className:"text-sm text-gray-500 mt-1",children:N.fetchedAt?`עודכן: ${new Date(N.fetchedAt).toLocaleString("he-IL")}`:"טוען..."})]}),f.jsxs("div",{className:"flex gap-2",children:[f.jsx("button",{onClick:()=>z0(!0),className:"px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors",children:"+ ליד חדש"}),f.jsx("button",{onClick:N.refresh,disabled:N.loading,className:"px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors",children:N.loading?"טוען...":"רענן"})]})]}),N.error&&f.jsx("div",{className:"mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm",children:N.error}),N.stats&&f.jsx(gy,{stats:N.stats}),N.stats&&o===Qn.pipeline&&f.jsx(by,{byStage:N.stats.byStage}),o===Qn.pipeline&&f.jsx(Cy,{leads:N.leads,loading:N.loading,actions:N.actions}),o===Qn.briefing&&f.jsx(Hy,{data:d}),o===Qn.tasks&&f.jsx(Py,{leads:N.leads,stats:N.stats,loading:N.loading,actions:N.actions}),Z0&&f.jsx(V0,{onClose:()=>z0(!1),onCreate:N.actions.create})]})]})}my.createRoot(document.getElementById("root")).render(f.jsx(ny.StrictMode,{children:f.jsx(wy,{})}));
+function V0({onClose:o,onCreate:z}){
+  const[chatMsgs,setChatMsgs]=X.useState([])
+  const[input,setInput]=X.useState("")
+  const[loading,setLoading]=X.useState(!1)
+  const[showWA,setShowWA]=X.useState(!1)
+  const[waText,setWaText]=X.useState("")
+  const[pendingLead,setPendingLead]=X.useState(null)
+  const[error,setError]=X.useState(null)
+  const[mode,setMode]=X.useState("chat")
+  const scrollRef=X.useRef(null)
+  // Form fallback state
+  const[fName,setFName]=X.useState("")
+  const[fCompany,setFCompany]=X.useState("")
+  const[fDate,setFDate]=X.useState("")
+  const[fHeat,setFHeat]=X.useState("11")
+  const[fNotes,setFNotes]=X.useState("")
+
+  X.useEffect(()=>{
+    scrollRef.current?.scrollIntoView({behavior:"smooth"})
+  },[chatMsgs])
+
+  // Start with AI greeting
+  X.useEffect(()=>{
+    setChatMsgs([{role:"assistant",content:"היי! 👋 ספרי לי על הליד החדש.\n\nאפשר פשוט לכתוב מה שאת יודעת — שם, חברה, מה קרה — ואני אסדר את זה.\n\nאפשר גם להדביק שיחת וואטסאפ ואני אנתח אותה 📱"}])
+  },[])
+
+  const sendToAI=async(userMsg)=>{
+    const newMsgs=[...chatMsgs,{role:"user",content:userMsg}]
+    setChatMsgs(newMsgs)
+    setInput("")
+    setLoading(!0)
+    setError(null)
+    try{
+      const res=await fetch("/api/ai-chat",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({messages:newMsgs.map(m=>({role:m.role,content:m.content}))})
+      })
+      if(!res.ok)throw new Error("AI שגיאה: "+res.status)
+      const data=await res.json()
+      if(!data.success)throw new Error(data.error||"שגיאה")
+      const aiReply=data.response||""
+      setChatMsgs(prev=>[...prev,{role:"assistant",content:aiReply}])
+      // Check if AI approved lead creation
+      if(data.approved&&data.leadData){
+        setPendingLead(data.leadData)
+      }
+      // Check for structured update block in reply
+      if(aiReply.includes("---LEAD_UPDATE---")){
+        const block=aiReply.split("---LEAD_UPDATE---")[1]?.split("---END_UPDATE---")[0]
+        if(block){
+          const getName=s=>{const m=s.match(/עדכון ליד:\s*(.+)/);return m?m[1].trim():""}
+          const getField=(s,f)=>{const m=s.match(new RegExp(f+`:\\s*(.+)`));return m?m[1].trim():""}
+          const heatMap={"חם":"11","בינוני":"5","קר":"8","אפסייל":"10"}
+          const name=getName(block)
+          const heat=getField(block,"חום")
+          const parsedLead={
+            name:name,
+            company:"",
+            date:getField(block,"תאריך מעקב הבא מומלץ")||getField(block,"תאריך")||new Date().toISOString().split("T")[0],
+            colorId:heatMap[heat]||"11",
+            description:`סטטוס: ${getField(block,"סטטוס")}\nפרטים: ${getField(block,"פרטים")}\nהמלצות: ${getField(block,"המלצות לצעד הבא")}\nמעקב: ${getField(block,"תאריך מעקב הבא מומלץ")}`,
+            followUpDate:getField(block,"תאריך מעקב הבא מומלץ")
+          }
+          if(name)setPendingLead(parsedLead)
+        }
+      }
+    }catch(err){
+      setChatMsgs(prev=>[...prev,{role:"assistant",content:"⚠️ לא הצלחתי להתחבר ל-AI. אפשר להשתמש בטופס ידני למטה."}])
+      setMode("form")
+    }finally{
+      setLoading(!1)
+    }
+  }
+
+  const handleSend=()=>{
+    if(!input.trim())return
+    sendToAI(input.trim())
+  }
+
+  const handleWASend=()=>{
+    if(!waText.trim())return
+    sendToAI("שיחת וואטסאפ:\n\n"+waText.trim())
+    setWaText("")
+    setShowWA(!1)
+  }
+
+  const handleApprove=async()=>{
+    if(!pendingLead)return
+    setLoading(!0)
+    setError(null)
+    try{
+      await z({
+        name:pendingLead.name,
+        company:pendingLead.company||void 0,
+        date:pendingLead.followUpDate||pendingLead.date||void 0,
+        colorId:pendingLead.colorId||"11",
+        description:pendingLead.description||void 0
+      })
+      o()
+    }catch(err){
+      setError(err.message)
+    }finally{
+      setLoading(!1)
+    }
+  }
+
+  const handleFormCreate=async()=>{
+    if(!fName.trim()){setError("שם הליד חובה");return}
+    setLoading(!0)
+    setError(null)
+    try{
+      await z({
+        name:fName.trim(),
+        company:fCompany.trim()||void 0,
+        date:fDate||void 0,
+        colorId:fHeat,
+        description:fNotes.trim()||void 0
+      })
+      o()
+    }catch(err){
+      setError(err.message)
+    }finally{
+      setLoading(!1)
+    }
+  }
+
+  const heatOpts=[{id:"11",label:"🔴 חם"},{id:"10",label:"🟢 אפסייל"},{id:"5",label:"🟡 בינוני"},{id:"8",label:"⚪ קר"}]
+
+  return f.jsxs("div",{className:"fixed inset-0 z-50 flex items-center justify-center",dir:"rtl",children:[
+    f.jsx("div",{className:"absolute inset-0 bg-black/30",onClick:o}),
+    f.jsxs("div",{className:"relative bg-white rounded-2xl shadow-2xl w-full max-w-xl mx-4 flex flex-col",style:{maxHeight:"85vh"},children:[
+      // Header
+      f.jsxs("div",{className:"flex items-center justify-between p-4 border-b border-gray-200",children:[
+        f.jsxs("div",{className:"flex items-center gap-2",children:[
+          f.jsx("h2",{className:"text-lg font-bold text-gray-900",children:"ליד חדש"}),
+          f.jsxs("div",{className:"flex gap-1",children:[
+            f.jsx("button",{onClick:()=>setMode("chat"),className:`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${mode==="chat"?"bg-blue-100 text-blue-700":"bg-gray-100 text-gray-500 hover:bg-gray-200"}`,children:"🤖 צ׳אט"}),
+            f.jsx("button",{onClick:()=>setMode("form"),className:`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${mode==="form"?"bg-blue-100 text-blue-700":"bg-gray-100 text-gray-500 hover:bg-gray-200"}`,children:"📝 טופס"})
+          ]})
+        ]}),
+        f.jsx("button",{onClick:o,className:"p-1.5 rounded-lg hover:bg-gray-100 text-gray-400",children:"✕"})
+      ]}),
+
+      // Body
+      mode==="chat"?f.jsxs("div",{className:"flex-1 flex flex-col overflow-hidden p-4",children:[
+        // Chat messages
+        f.jsxs("div",{className:"flex-1 overflow-y-auto space-y-3 mb-3",style:{minHeight:"250px",maxHeight:"400px"},children:[
+          chatMsgs.map((m,i)=>f.jsx("div",{className:`flex ${m.role==="user"?"justify-start":"justify-end"}`,children:
+            f.jsx("div",{className:`max-w-[85%] rounded-xl px-4 py-3 text-sm ${m.role==="user"?"bg-blue-600 text-white":"bg-gray-100 text-gray-800"}`,children:
+              f.jsx("pre",{className:"whitespace-pre-wrap font-sans",children:m.content})
+            })
+          },i)),
+          loading&&f.jsx("div",{className:"flex justify-end",children:f.jsx("div",{className:"bg-gray-100 rounded-xl px-4 py-3 text-sm text-gray-500",children:f.jsx("span",{className:"animate-pulse",children:"חושב..."})})}),
+          f.jsx("div",{ref:scrollRef})
+        ]}),
+
+        // Pending lead approval card
+        pendingLead&&f.jsxs("div",{className:"mb-3 p-3 bg-green-50 border border-green-300 rounded-xl",children:[
+          f.jsxs("p",{className:"text-sm font-semibold text-green-800 mb-2",children:["✅ ליד מוכן: ",pendingLead.name]}),
+          f.jsx("p",{className:"text-xs text-green-700 mb-2",children:pendingLead.description?.split("\n").slice(0,3).join(" | ")}),
+          f.jsxs("div",{className:"flex gap-2",children:[
+            f.jsx("button",{onClick:handleApprove,disabled:loading,className:"flex-1 px-3 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50",children:loading?"שומר...":"✓ אשר וצור ליד"}),
+            f.jsx("button",{onClick:()=>{setPendingLead(null);sendToAI("אני רוצה לשנות משהו בעדכון")},className:"px-3 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm hover:bg-gray-200",children:"✏️ ערוך"})
+          ]})
+        ]}),
+
+        // WhatsApp paste area
+        showWA&&f.jsxs("div",{className:"mb-3 p-3 bg-green-50 border border-green-200 rounded-xl",children:[
+          f.jsx("p",{className:"text-xs font-medium text-green-800 mb-1",children:"הדבק/י שיחת וואטסאפ:"}),
+          f.jsx("textarea",{value:waText,onChange:e=>setWaText(e.target.value),placeholder:"העתק/י מוואטסאפ והדבק/י כאן...",rows:5,className:"w-full border border-green-200 rounded-lg px-3 py-2 text-sm resize-none mb-2",autoFocus:!0}),
+          f.jsxs("div",{className:"flex gap-2",children:[
+            f.jsx("button",{onClick:handleWASend,disabled:!waText.trim(),className:"px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-medium hover:bg-green-700 disabled:opacity-50",children:"📤 נתח שיחה"}),
+            f.jsx("button",{onClick:()=>setShowWA(!1),className:"px-3 py-1.5 bg-gray-100 text-gray-600 rounded-lg text-xs hover:bg-gray-200",children:"ביטול"})
+          ]})
+        ]}),
+
+        // Input area
+        f.jsxs("div",{className:"flex gap-2",children:[
+          f.jsx("button",{onClick:()=>setShowWA(!showWA),className:`p-2.5 rounded-lg text-sm transition-colors ${showWA?"bg-green-100 text-green-700":"bg-gray-100 text-gray-500 hover:bg-gray-200"}`,title:"הדבק שיחת וואטסאפ",children:"📱"}),
+          f.jsx("input",{type:"text",value:input,onChange:e=>setInput(e.target.value),onKeyDown:e=>e.key==="Enter"&&!e.shiftKey&&handleSend(),placeholder:"ספר/י על הליד...",className:"flex-1 border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"}),
+          f.jsx("button",{onClick:handleSend,disabled:loading||!input.trim(),className:"px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50",children:"שלח"})
+        ]})
+      ]}):
+
+      // Form mode (fallback)
+      f.jsxs("div",{className:"flex-1 overflow-y-auto p-4 space-y-4",children:[
+        f.jsxs("div",{children:[f.jsx("label",{className:"block text-sm font-medium text-gray-700 mb-1",children:"שם הליד *"}),f.jsx("input",{type:"text",value:fName,onChange:e=>setFName(e.target.value),placeholder:"שם הלקוח / החברה",className:"w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500",autoFocus:!0})]}),
+        f.jsxs("div",{children:[f.jsx("label",{className:"block text-sm font-medium text-gray-700 mb-1",children:"חברה"}),f.jsx("input",{type:"text",value:fCompany,onChange:e=>setFCompany(e.target.value),placeholder:"אופציונלי",className:"w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm"})]}),
+        f.jsxs("div",{className:"grid grid-cols-2 gap-4",children:[
+          f.jsxs("div",{children:[f.jsx("label",{className:"block text-sm font-medium text-gray-700 mb-1",children:"תאריך"}),f.jsx("input",{type:"date",value:fDate,onChange:e=>setFDate(e.target.value),className:"w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm"})]}),
+          f.jsxs("div",{children:[f.jsx("label",{className:"block text-sm font-medium text-gray-700 mb-1",children:"רמת חום"}),f.jsx("div",{className:"flex gap-1.5 mt-1",children:heatOpts.map(h=>f.jsx("button",{onClick:()=>setFHeat(h.id),className:`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${fHeat===h.id?"ring-2 ring-offset-1 ring-blue-500 border-gray-400":"border-gray-200 hover:bg-gray-50"}`,children:h.label},h.id))})]})
+        ]}),
+        f.jsxs("div",{children:[f.jsx("label",{className:"block text-sm font-medium text-gray-700 mb-1",children:"הערות"}),f.jsx("textarea",{value:fNotes,onChange:e=>setFNotes(e.target.value),placeholder:"הערות, פרטי קשר, תובנות...",rows:3,className:"w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm resize-none"})]}),
+        f.jsxs("div",{className:"flex gap-3 pt-2",children:[
+          f.jsx("button",{onClick:handleFormCreate,disabled:loading,className:"flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50",children:loading?"יוצר...":"צור ליד"}),
+          f.jsx("button",{onClick:o,className:"px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-200",children:"ביטול"})
+        ]})
+      ]}),
+
+      // Error display
+      error&&f.jsx("div",{className:"mx-4 mb-3 p-2 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm",children:error})
+    ]})
+  ]})
+}
+function wy(){const[o,z]=X.useState(Qn.pipeline),[Z0,z0]=X.useState(!1),N=Ky(),d=Jy();return f.jsxs("div",{className:"min-h-screen flex",dir:"rtl",children:[f.jsx(hy,{view:o,setView:z,onRefresh:N.refresh}),f.jsxs("main",{className:"flex-1 p-6 overflow-y-auto",children:[f.jsxs("header",{className:"mb-6 flex items-center justify-between",children:[f.jsxs("div",{children:[f.jsx("h1",{className:"text-2xl font-bold text-gray-900",children:"MSApps Lead Pipeline"}),f.jsx("p",{className:"text-sm text-gray-500 mt-1",children:N.fetchedAt?`עודכן: ${new Date(N.fetchedAt).toLocaleString("he-IL")}`:"טוען..."})]}),f.jsxs("div",{className:"flex gap-2",children:[f.jsx("button",{onClick:()=>z0(!0),className:"px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors",children:"+ ליד חדש"}),f.jsx("button",{onClick:N.refresh,disabled:N.loading,className:"px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition-colors",children:N.loading?"טוען...":"רענן"})]})]}),N.error&&f.jsx("div",{className:"mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm",children:N.error}),N.stats&&f.jsx(gy,{stats:N.stats}),N.stats&&o===Qn.pipeline&&f.jsx(by,{byStage:N.stats.byStage}),o===Qn.pipeline&&f.jsx(Cy,{leads:N.leads,loading:N.loading,actions:N.actions}),o===Qn.briefing&&f.jsx(Hy,{data:d}),o===Qn.tasks&&f.jsx(Py,{leads:N.leads,stats:N.stats,loading:N.loading,actions:N.actions}),Z0&&f.jsx(V0,{onClose:()=>z0(!1),onCreate:N.actions.create})]})]})}my.createRoot(document.getElementById("root")).render(f.jsx(ny.StrictMode,{children:f.jsx(wy,{})}));

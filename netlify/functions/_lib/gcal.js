@@ -170,11 +170,14 @@ export async function updateEventDescription(eventId, description) {
 export async function createEvent({ summary, description, date, colorId }) {
   const token = await getAccessToken()
   const startDate = date || new Date().toISOString().split('T')[0]
+  // Use timed event (1-hour at 09:00 Israel time) — not all-day
+  const startDT = `${startDate.split('T')[0]}T09:00:00`
+  const endDT = `${startDate.split('T')[0]}T10:00:00`
   const body = {
     summary,
     description: description || '',
-    start: { date: startDate },
-    end: { date: startDate },
+    start: { dateTime: startDT, timeZone: 'Asia/Jerusalem' },
+    end: { dateTime: endDT, timeZone: 'Asia/Jerusalem' },
   }
   if (colorId) body.colorId = String(colorId)
 
