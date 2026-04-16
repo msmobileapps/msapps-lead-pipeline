@@ -48,7 +48,7 @@ function generateBriefingContent(leads, stats) {
 
   // Stage distribution
   content += '📈 התפלגות שלבים:\n'
-  for (const [stage, count] of Object.entries(stats.stageCounts)) {
+  for (const [stage, count] of Object.entries(stats.byStage || {})) {
     if (count > 0) content += `• ${stage}: ${count}\n`
   }
 

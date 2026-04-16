@@ -171,21 +171,25 @@
       return new Date(d).toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
     }
 
-    function renderCard(event, idx) {
-      const heat = getHeat(event.colorId);
-      const heatColor = HEAT_COLORS[event.colorId] || '#9ca3af';
-      const heatLabel = HEAT_LABELS[heat] || heat;
-      const gcalLink = event.htmlLink || '';
-      const notes = event.description || '';
-      const date = formatDate(event);
-      const id = event.id;
+    function renderCard(lead, idx) {
+      // Support both mapped lead objects (from /api/leads) and raw GCal events
+      const heat = lead.heat || getHeat(lead.colorId);
+      const heatColor = lead.heatColor || HEAT_COLORS[lead.colorId] || '#9ca3af';
+      const heatLabel = lead.heatLabel || HEAT_LABELS[heat] || heat;
+      const gcalLink = lead.gcalLink || lead.htmlLink || '';
+      const notes = lead.rawNotes || lead.description || '';
+      const date = lead.dateFormatted || formatDate(lead);
+      const name = lead.name || lead.summary || '(ללא שם)';
+      const id = lead.id;
+      const stage = lead.stage || '';
 
       return `
         <div class="lead-card ${heat}" data-id="${id}" data-idx="${idx}">
-          <div class="lead-name">${event.summary || '(ללא שם)'}</div>
+          <div class="lead-name">${name}</div>
           <div class="lead-meta">
             <span class="lead-badge" style="background:${heatColor}">${heatLabel}</span>
             ${date ? `<span>📅 ${date}</span>` : ''}
+            ${stage ? `<span>📋 ${stage}</span>` : ''}
           </div>
           ${notes ? `<div class="lead-notes">${notes}</div>` : ''}
           <div class="lead-actions">
@@ -278,7 +282,7 @@
           results.innerHTML = '<div class="spinner">😕 אין תוצאות</div>';
         } else {
           status.textContent = `נמצאו ${leads.length} לידים תואמים ל-"${query}"`;
-          results.innerHTML = leads.map((lead, i) => renderCard(lead._raw || lead, i)).join('');
+          results.innerHTML = leads.map((lead, i) => renderCard(lead, i)).join('');
         }
       } catch(e) {
         status.textContent = '❌ שגיאה: ' + e.message;
