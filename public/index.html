@@ -184,7 +184,7 @@
       const stage = lead.stage || '';
 
       return `
-        <div class="lead-card ${heat}" data-id="${id}" data-idx="${idx}">
+        <div class="lead-card ${heat}" data-id="${id}" data-idx="${idx}" onclick="openLeadDetail(currentResults[${idx}])" style="cursor:pointer">
           <div class="lead-name">${name}</div>
           <div class="lead-meta">
             <span class="lead-badge" style="background:${heatColor}">${heatLabel}</span>
@@ -304,6 +304,13 @@
       showOverlay(false);
     });
   })();
-  </script>
+  
+    // Bridge: open lead in React detail panel
+    function openLeadDetail(lead) {
+      if (!lead) return;
+      showOverlay(false);
+      window.dispatchEvent(new CustomEvent('open-lead-detail', { detail: lead }));
+    }
+</script>
 </body>
 </html>
