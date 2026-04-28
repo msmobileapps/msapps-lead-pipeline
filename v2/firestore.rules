@@ -1,0 +1,47 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Allowlist enforced via custom claim `allowlisted: true` set by an
+    // onUserCreate auth trigger (see functions/index.js → onUserCreate).
+    function isAllowlistedUser() {
+      return request.auth != null && request.auth.token.allowlisted == true;
+    }
+
+    // Lead is owned by the authenticated user (matches their email claim).
+    function isOwner(data) {
+      return request.auth != null && request.auth.token.email == data.ownerEmail;
+    }
+
+    // Per-user lead documents — single Firestore, scoped by ownerEmail.
+    match /leads/{leadId} {
+      allow read:   if isAllowlistedUser() && isOwner(resource.data);
+      allow create: if isAllowlistedUser()
+                    && request.resource.data.ownerEmail == request.auth.token.email
+                    && request.resource.data.keys().hasAll(['name','stage','heat','date','ownerEmail']);
+      allow update: if isAllowlistedUser()
+                    && isOwner(resource.data)
+                    && request.resource.data.ownerEmail == resource.data.ownerEmail;
+      allow delete: if isAllowlistedUser() && isOwner(resource.data);
+    }
+
+    // Per-user briefings (history of daily AI briefings).
+    match /briefings/{briefingId} {
+      allow read:   if isAllowlistedUser() && isOwner(resource.data);
+      allow create: if isAllowlistedUser()
+                    && request.resource.data.ownerEmail == request.auth.token.email;
+      allow update, delete: if isAllowlistedUser() && isOwner(resource.data);
+    }
+
+    // Allowlist (read-only from clients; written by admin / firebase console).
+    match /allowlist/{email} {
+      allow read:  if request.auth != null && request.auth.token.email == email;
+      allow write: if false;
+    }
+
+    // Catch-all deny.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
