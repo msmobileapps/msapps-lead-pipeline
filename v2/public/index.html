@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MSApps Lead Pipeline v2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f9fafb;
+      --card: #ffffff;
+      --border: #e5e7eb;
+      --muted: #6b7280;
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --hot: #DC2626;
+      --upsale: #16A34A;
+      --warm: #EAB308;
+      --cold: #6B7280;
+      --normal: #3B82F6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: 'Heebo', 'Inter', sans-serif;
+      background: var(--bg);
+      color: #111827;
+      direction: rtl;
+    }
+    /* — Auth screen — */
+    .auth-shell {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .auth-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    }
+    .auth-card h1 { margin: 0 0 8px; font-size: 22px; }
+    .auth-card p { color: var(--muted); margin: 0 0 24px; font-size: 14px; }
+    .auth-card input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: inherit;
+      outline: none;
+      direction: ltr;
+      text-align: left;
+    }
+    .auth-card input:focus { border-color: var(--primary); }
+    .auth-card button {
+      margin-top: 12px;
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: var(--primary);
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .auth-card button:hover { background: var(--primary-hover); }
+    .auth-card button:disabled { background: #9ca3af; cursor: not-allowed; }
+    .auth-status { margin-top: 16px; font-size: 13px; color: var(--muted); min-height: 18px; }
+    .auth-status.error { color: var(--hot); }
+    .auth-status.success { color: var(--upsale); }
+
+    /* — Main shell — */
+    .app-shell { display: none; min-height: 100vh; }
+    .app-shell.active { display: block; }
+    header.topbar {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    header.topbar .brand { font-weight: 700; font-size: 16px; }
+    header.topbar .user { font-size: 13px; color: var(--muted); }
+    header.topbar button.signout {
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      background: transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 13px;
+    }
+    main { padding: 24px; max-width: 1280px; margin: 0 auto; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .stat-card .label { font-size: 13px; color: var(--muted); }
+    .stat-card .value { font-size: 28px; font-weight: 700; margin-top: 4px; }
+    .pipeline-bar {
+      display: flex;
+      height: 32px;
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 24px;
+      background: #e5e7eb;
+    }
+    .pipeline-segment {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+      min-width: 1px;
+    }
+    .leads-list { display: flex; flex-direction: column; gap: 10px; }
+    .lead-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-right: 4px solid var(--cold);
+      border-radius: 12px;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: box-shadow 0.15s;
+    }
+    .lead-card:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .lead-card.heat-hot    { border-right-color: var(--hot); }
+    .lead-card.heat-upsale { border-right-color: var(--upsale); }
+    .lead-card.heat-warm   { border-right-color: var(--warm); }
+    .lead-card.heat-normal { border-right-color: var(--normal); }
+    .lead-card .row1 { display: flex; justify-content: space-between; align-items: center; }
+    .lead-card .name { font-weight: 600; font-size: 15px; }
+    .lead-card .meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+    .lead-card .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #f3f4f6;
+      font-size: 12px;
+      margin-inline-start: 8px;
+    }
+    .lead-card .stale { color: var(--hot); font-size: 12px; }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+    .empty-state h2 { color: #111827; }
+    .empty-state .add-btn {
+      display: inline-block;
+      margin-top: 16px;
+      padding: 10px 20px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-family: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    @media (max-width: 700px) {
+      .stats { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Auth screen -->
+  <div id="authShell" class="auth-shell">
+    <div class="auth-card">
+      <h1>MSApps Lead Pipeline</h1>
+      <p>הזן את כתובת המייל שלך — נשלח לך קישור התחברות.</p>
+      <form id="signInForm">
+        <input id="emailInput" type="email" placeholder="you@msapps.mobi" required autocomplete="email" />
+        <button id="sendLinkBtn" type="submit">שלח קישור התחברות</button>
+      </form>
+      <div id="authStatus" class="auth-status"></div>
+    </div>
+  </div>
+
+  <!-- App shell -->
+  <div id="appShell" class="app-shell">
+    <header class="topbar">
+      <div class="brand">MSApps Lead Pipeline</div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <span id="userEmail" class="user"></span>
+        <button id="signOutBtn" class="signout">יציאה</button>
+      </div>
+    </header>
+    <main>
+      <div class="stats">
+        <div class="stat-card"><div class="label">סך הכל</div><div class="value" id="statTotal">—</div></div>
+        <div class="stat-card"><div class="label">פעילים</div><div class="value" id="statActive">—</div></div>
+        <div class="stat-card"><div class="label">חמים</div><div class="value" id="statHot">—</div></div>
+        <div class="stat-card"><div class="label">ישנים</div><div class="value" id="statStale">—</div></div>
+      </div>
+      <div id="pipelineBar" class="pipeline-bar"></div>
+      <div id="leadsList" class="leads-list"></div>
+      <div id="emptyState" class="empty-state" style="display:none;">
+        <h2>אין לידים עדיין</h2>
+        <p>זה הפיפליין החדש שלך ב-Firebase. הוסף ליד ראשון או הריץ את ה-migration script מ-Google Calendar.</p>
+        <button id="addFirstBtn" class="add-btn">הוסף ליד ראשון</button>
+      </div>
+    </main>
+  </div>
+
+  <!-- Firebase SDK (CDN, modular) — loaded as ES module so app.js can import. -->
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

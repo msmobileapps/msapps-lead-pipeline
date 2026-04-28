@@ -1,0 +1,13 @@
+node_modules/
+.firebase/
+.runtimeconfig.json
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+functions/node_modules/
+functions/lib/*.map

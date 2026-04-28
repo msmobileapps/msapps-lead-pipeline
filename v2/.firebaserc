@@ -1,0 +1,6 @@
+{
+  "projects": {
+    "default": "opsagent-prod",
+    "prod":    "opsagent-prod"
+  }
+}
