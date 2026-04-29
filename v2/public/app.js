@@ -64,8 +64,23 @@ $('signInForm').addEventListener('submit', async (e) => {
   $('sendLinkBtn').disabled = true;
   setStatus('שולח קישור...');
   try {
+    // BUG-LP-003 fix: if a different user is currently signed in, sign them
+    // out before issuing a new link. Otherwise the existing session sticks
+    // and the user can end up logged in as the wrong identity after the link.
+    if (auth.currentUser && auth.currentUser.email && auth.currentUser.email.toLowerCase() !== email) {
+      await signOut(auth);
+    }
     await sendSignInLinkToEmail(auth, email, ACTION_CODE_SETTINGS);
-    window.localStorage.setItem('emailForSignIn', email);
+    // Belt-and-suspenders persistence: localStorage + sessionStorage + cookie.
+    // Email-link clicks sometimes land in a different storage context (auth
+    // handler redirect, different browser profile). Multiple stores raise the
+    // chance the email is recovered without prompting.
+    try {
+      window.localStorage.setItem('emailForSignIn', email);
+      window.sessionStorage.setItem('emailForSignIn', email);
+      document.cookie = 'emailForSignIn=' + encodeURIComponent(email) +
+        '; max-age=900; path=/; SameSite=Lax';
+    } catch {}
     setStatus('שלחנו לך קישור התחברות למייל ✉️', 'success');
   } catch (err) {
     setStatus('שגיאה: ' + err.message, 'error');
@@ -81,17 +96,43 @@ $('signOutBtn').addEventListener('click', async () => {
 // ── Complete email-link sign-in if returning from email
 async function maybeCompleteEmailLinkSignIn() {
   if (!isSignInWithEmailLink(auth, window.location.href)) return;
-  let email = window.localStorage.getItem('emailForSignIn');
-  if (!email) email = window.prompt('הזן את כתובת המייל שאליה נשלח הקישור:');
+
+  // BUG-LP-003 fix: if a previous user is still signed in (e.g. earlier
+  // successful sign-in as michal@msapps.mobi), sign them out first so the
+  // email-link flow can install the new identity cleanly.
+  if (auth.currentUser) {
+    try { await signOut(auth); } catch {}
+  }
+
+  // Try every persistence we wrote on send (localStorage + sessionStorage + cookie).
+  let email =
+    window.localStorage.getItem('emailForSignIn') ||
+    window.sessionStorage.getItem('emailForSignIn') ||
+    readEmailCookie();
+
+  if (!email) {
+    email = window.prompt(
+      'אנא הזן/י את כתובת המייל שאליה נשלח הקישור — אותה כתובת שהזנת קודם בדף ההתחברות:'
+    );
+  }
   if (!email) return;
+  email = email.trim().toLowerCase();
+
   try {
     await signInWithEmailLink(auth, email, window.location.href);
     window.localStorage.removeItem('emailForSignIn');
+    window.sessionStorage.removeItem('emailForSignIn');
+    document.cookie = 'emailForSignIn=; max-age=0; path=/; SameSite=Lax';
     // Strip the link params from the URL.
     window.history.replaceState({}, '', window.location.pathname);
   } catch (err) {
     setStatus('כשל בהשלמת התחברות: ' + err.message, 'error');
   }
+}
+
+function readEmailCookie() {
+  const m = document.cookie.match(/(?:^|;\s*)emailForSignIn=([^;]+)/);
+  return m ? decodeURIComponent(m[1]) : null;
 }
 
 // ── App
