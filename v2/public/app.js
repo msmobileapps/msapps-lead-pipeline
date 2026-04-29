@@ -143,12 +143,14 @@ function renderLeads(leads) {
     return;
   }
   $('emptyState').style.display = 'none';
+  const me = (auth.currentUser?.email || '').toLowerCase();
   leads.forEach(lead => {
+    const isSharedWithMe = lead.ownerEmail && lead.ownerEmail.toLowerCase() !== me;
     const card = document.createElement('div');
     card.className = 'lead-card heat-' + (lead.heat || 'normal');
     card.innerHTML = `
       <div class="row1">
-        <div class="name">${escapeHtml(lead.name)} <span class="badge">${lead.stage}</span></div>
+        <div class="name">${escapeHtml(lead.name)} <span class="badge">${lead.stage}</span>${isSharedWithMe ? '<span class="shared-badge" title="משותף איתך מאת ' + escapeHtml(lead.ownerEmail) + '">משותף 🤝</span>' : ''}</div>
         <div class="badge" style="background:${lead.heatColor};color:white;">${lead.heatLabel}</div>
       </div>
       <div class="meta">
@@ -235,11 +237,136 @@ function openLead(lead) {
   $('updateText').value = '';
   $('nextStep').value = '';
 
+  renderShareSection(lead);
+
   // Always start in read-only mode.
   setEditMode(false);
   $('drawerOverlay').hidden = false;
   $('drawerOverlay').classList.add('open');
   $('leadDrawer').classList.add('open');
+}
+
+// ── Share section (Card #10)
+//
+// The owner sees a chip list of who the lead is shared with, plus a small
+// form to add another allowlisted user. Non-owners see the list (read-only)
+// with a note that only the owner can change shares.
+const ALLOWLIST_HINT = [
+  'michal@msapps.mobi',
+  'bar.kadosh@msapps.mobi',
+  'michal@opsagents.agency',
+  'msmobileapps@gmail.com',
+];
+
+function renderShareSection(lead) {
+  const me = (auth.currentUser?.email || '').toLowerCase();
+  const owner = (lead.ownerEmail || '').toLowerCase();
+  const sharedWith = Array.isArray(lead.sharedWith) ? lead.sharedWith : [];
+  const isOwner = me === owner;
+
+  const row = $('drawerSharedWith');
+  row.innerHTML = '';
+
+  // Owner chip (always shown, read-only)
+  if (owner) {
+    const ownerChip = document.createElement('span');
+    ownerChip.className = 'share-chip is-self';
+    ownerChip.textContent = '👤 ' + owner + (isOwner ? ' (את)' : ' (בעלים)');
+    row.appendChild(ownerChip);
+  }
+
+  // Shared-with chips
+  sharedWith.forEach((email) => {
+    const chip = document.createElement('span');
+    chip.className = 'share-chip';
+    chip.appendChild(document.createTextNode('🤝 ' + email));
+    if (isOwner) {
+      const x = document.createElement('span');
+      x.className = 'x';
+      x.textContent = '×';
+      x.title = 'הסר שיתוף';
+      x.setAttribute('role', 'button');
+      x.setAttribute('aria-label', 'הסר שיתוף עם ' + email);
+      x.addEventListener('click', () => unshareLead(lead.id, email));
+      chip.appendChild(x);
+    }
+    row.appendChild(chip);
+  });
+
+  // Form: only the owner can add shares
+  const form = $('drawerShareForm');
+  const note = $('shareReadonlyNote');
+  if (isOwner) {
+    form.hidden = false;
+    note.hidden = true;
+    const sel = $('shareEmailSelect');
+    sel.innerHTML = '';
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = '— בחר משתמש —';
+    sel.appendChild(placeholder);
+    const taken = new Set([owner, ...sharedWith.map((e) => e.toLowerCase())]);
+    ALLOWLIST_HINT.forEach((email) => {
+      if (taken.has(email)) return;
+      const opt = document.createElement('option');
+      opt.value = email;
+      opt.textContent = email;
+      sel.appendChild(opt);
+    });
+  } else {
+    form.hidden = true;
+    note.hidden = false;
+  }
+  $('shareError').textContent = '';
+}
+
+async function shareLead(leadId, email) {
+  if (!email) return;
+  $('shareError').textContent = '';
+  const btn = $('shareAddBtn');
+  btn.disabled = true;
+  try {
+    const r = await authedFetch('/api/leads', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'share', leadId, payload: { email } }),
+    });
+    if (!r.ok) {
+      const j = await r.json().catch(() => ({}));
+      throw new Error(j.error || `HTTP ${r.status}`);
+    }
+    // Update local activeLead state and re-render the section.
+    if (activeLead && activeLead.id === leadId) {
+      activeLead.sharedWith = [...(activeLead.sharedWith || []), email.toLowerCase()];
+      renderShareSection(activeLead);
+    }
+    await loadLeads();
+  } catch (err) {
+    $('shareError').textContent = 'שגיאה בשיתוף: ' + err.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function unshareLead(leadId, email) {
+  if (!email) return;
+  $('shareError').textContent = '';
+  try {
+    const r = await authedFetch('/api/leads', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'unshare', leadId, payload: { email } }),
+    });
+    if (!r.ok) {
+      const j = await r.json().catch(() => ({}));
+      throw new Error(j.error || `HTTP ${r.status}`);
+    }
+    if (activeLead && activeLead.id === leadId) {
+      activeLead.sharedWith = (activeLead.sharedWith || []).filter((e) => e.toLowerCase() !== email.toLowerCase());
+      renderShareSection(activeLead);
+    }
+    await loadLeads();
+  } catch (err) {
+    $('shareError').textContent = 'שגיאה בביטול שיתוף: ' + err.message;
+  }
 }
 
 function closeDrawer() {
@@ -317,6 +444,12 @@ function initDrawer() {
   $('drawerEditBtn').addEventListener('click', () => setEditMode(true));
   $('drawerCancelEditBtn').addEventListener('click', () => setEditMode(false));
   $('drawerSaveBtn').addEventListener('click', saveLeadUpdate);
+  $('drawerShareForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = $('shareEmailSelect').value.trim();
+    if (!email || !activeLead) return;
+    shareLead(activeLead.id, email);
+  });
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && !$('drawerOverlay').hidden) closeDrawer();
   });

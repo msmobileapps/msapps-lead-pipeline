@@ -13,15 +13,35 @@ service cloud.firestore {
       return request.auth != null && request.auth.token.email == data.ownerEmail;
     }
 
+    // Lead is shared with the authenticated user (their email is in sharedWith[]).
+    function isShared(data) {
+      return request.auth != null
+        && data.sharedWith is list
+        && data.sharedWith.hasAny([request.auth.token.email]);
+    }
+
     // Per-user lead documents — single Firestore, scoped by ownerEmail.
+    // Sharing: a lead can be `sharedWith: [email1, email2, ...]`. Anyone in
+    // that list (and on the allowlist) can read + update the lead. Only the
+    // owner can create, delete, or change ownerEmail/sharedWith.
     match /leads/{leadId} {
-      allow read:   if isAllowlistedUser() && isOwner(resource.data);
+      allow read:   if isAllowlistedUser()
+                    && (isOwner(resource.data) || isShared(resource.data));
+
       allow create: if isAllowlistedUser()
                     && request.resource.data.ownerEmail == request.auth.token.email
                     && request.resource.data.keys().hasAll(['name','stage','heat','date','ownerEmail']);
+
+      // Updates: shared users may change content (notes, stage, heat, etc.)
+      // but NOT ownerEmail or sharedWith. Only the owner can change those.
       allow update: if isAllowlistedUser()
-                    && isOwner(resource.data)
-                    && request.resource.data.ownerEmail == resource.data.ownerEmail;
+                    && (isOwner(resource.data) || isShared(resource.data))
+                    && request.resource.data.ownerEmail == resource.data.ownerEmail
+                    && (
+                         isOwner(resource.data)
+                         || request.resource.data.sharedWith == resource.data.sharedWith
+                       );
+
       allow delete: if isAllowlistedUser() && isOwner(resource.data);
     }
 

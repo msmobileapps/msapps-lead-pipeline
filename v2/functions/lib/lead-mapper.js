@@ -14,6 +14,7 @@
  *     rawNotes:   string
  *     attachments?: Array<{ title, url, mimeType, iconLink }>
  *     legacyGcalId?: string      // populated by migrate/gcal-to-firestore.js
+ *     sharedWith?: string[]      // lowercased emails — share with same-perm peers
  *     createdAt:  Timestamp
  *     updatedAt:  Timestamp
  *   }
@@ -68,6 +69,8 @@ export function docToLead(doc) {
     contactEmail: data.contactEmail || '',
     contactPhone: data.contactPhone || '',
     attachments: data.attachments || [],
+    ownerEmail: data.ownerEmail || '',
+    sharedWith: Array.isArray(data.sharedWith) ? data.sharedWith : [],
     isStale: daysSinceUpdate > STALE_DAYS,
     stale: daysSinceUpdate > STALE_DAYS,
     daysSinceUpdate,
@@ -75,6 +78,23 @@ export function docToLead(doc) {
     createdAt: data.createdAt?.toDate?.()?.toISOString() || null,
     updatedAt: updated.toISOString(),
   };
+}
+
+/**
+ * Merge two arrays of lead-shaped objects, dedupe by `key` (default: id).
+ * Preserves first occurrence (so owner-leads win over shared-leads when the
+ * caller is also the owner — extremely unusual but possible).
+ */
+export function mergeUnique(arr, key = 'id') {
+  const seen = new Set();
+  const out = [];
+  for (const item of arr) {
+    const k = item?.[key];
+    if (!k || seen.has(k)) continue;
+    seen.add(k);
+    out.push(item);
+  }
+  return out;
 }
 
 /** Sort leads: hot first, then by date desc. */
