@@ -21,9 +21,22 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 PROJECT="opsagent-prod"
-FB="${FB:-firebase}"
 
-echo "▶ deploy-staging.sh — project=$PROJECT"
+# Resolve firebase CLI: env override → PATH → ~/npm-global/bin → /opt/homebrew/bin
+if [ -n "${FB:-}" ]; then
+  :
+elif command -v firebase >/dev/null 2>&1; then
+  FB="$(command -v firebase)"
+elif [ -x "$HOME/npm-global/bin/firebase" ]; then
+  FB="$HOME/npm-global/bin/firebase"
+elif [ -x "/opt/homebrew/bin/firebase" ]; then
+  FB="/opt/homebrew/bin/firebase"
+else
+  echo "✖ firebase CLI not found. Install with: npm install -g firebase-tools"
+  exit 1
+fi
+
+echo "▶ deploy-staging.sh — project=$PROJECT — using $FB"
 
 # ─── Auth check ───────────────────────────────────────────────────────────
 if ! "$FB" login:list 2>&1 | grep -qE "@(msapps\.mobi|gmail\.com|opsagents\.agency)"; then
