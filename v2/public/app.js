@@ -168,10 +168,160 @@ function escapeHtml(s) {
   }[ch]));
 }
 
+// ── Lead detail drawer (Cards #2 + #4)
+//
+// Card #2 fix: drawer body has bottom padding so the action row never clips the
+// last field, AND the action bar is sticky-bottom inside the drawer (not
+// overlaying content) so nothing falls behind the white bar.
+//
+// Card #4 fix: the "ערוך" (Edit) button reveals an enabled <textarea>, a stage
+// + heat picker, and a "next step" input. Saving POSTs an `updateNotes` action
+// through /api/leads — which appends to the lead's `updates` array, optionally
+// changes stage/heat, and triggers a refresh.
+const STAGES_HE = [
+  'ליד חדש',
+  'נשלחה הצעה',
+  'במשא ומתן',
+  'מחכה לתשובה',
+  'נסגר בהצלחה',
+  'לא רלוונטי',
+];
+const HEAT_LABELS = {
+  hot: 'חם',
+  warm: 'פושר',
+  normal: 'רגיל',
+  upsale: 'Upsale',
+  cold: 'קר',
+};
+
+let activeLead = null;
+
 function openLead(lead) {
-  // Stub — wire to your existing detail panel UX.
-  alert(`${lead.name}\n\n${lead.stage} • ${lead.heatLabel}\n\n${lead.rawNotes || '(אין הערות)'}`);
+  activeLead = lead;
+  $('drawerTitle').textContent = lead.name || '(ללא שם)';
+  $('drawerStage').textContent = lead.stage || '—';
+  $('drawerHeat').textContent = lead.heatLabel || HEAT_LABELS[lead.heat] || '—';
+  $('drawerDate').textContent = lead.dateFormatted || '';
+  $('drawerNotes').textContent = lead.rawNotes || '(אין הערות)';
+
+  const updatesBox = $('drawerUpdates');
+  updatesBox.innerHTML = '';
+  const updates = Array.isArray(lead.updates) ? lead.updates : [];
+  if (!updates.length) {
+    updatesBox.innerHTML = '<div class="drawer-update"><div class="when">—</div>אין עדכונים עדיין.</div>';
+  } else {
+    updates.slice().reverse().forEach(u => {
+      const el = document.createElement('div');
+      el.className = 'drawer-update';
+      const when = u.at?._seconds
+        ? new Date(u.at._seconds * 1000).toLocaleString('he-IL')
+        : (u.when || '');
+      el.innerHTML = `<div class="when">${escapeHtml(when)}</div>${escapeHtml(u.text || '')}`;
+      updatesBox.appendChild(el);
+    });
+  }
+
+  // Populate stage select.
+  const stageSel = $('editStage');
+  stageSel.innerHTML = '';
+  STAGES_HE.forEach(s => {
+    const opt = document.createElement('option');
+    opt.value = s;
+    opt.textContent = s;
+    if (s === lead.stage) opt.selected = true;
+    stageSel.appendChild(opt);
+  });
+  $('editHeat').value = lead.heat || 'normal';
+  $('updateText').value = '';
+  $('nextStep').value = '';
+
+  // Always start in read-only mode.
+  setEditMode(false);
+  $('drawerOverlay').hidden = false;
+  $('drawerOverlay').classList.add('open');
+  $('leadDrawer').classList.add('open');
 }
+
+function closeDrawer() {
+  $('drawerOverlay').classList.remove('open');
+  $('leadDrawer').classList.remove('open');
+  setTimeout(() => { $('drawerOverlay').hidden = true; }, 200);
+  activeLead = null;
+}
+
+function setEditMode(on) {
+  $('drawerEditSection').hidden = !on;
+  $('drawerEditBtn').hidden = on;
+  $('drawerCancelEditBtn').hidden = !on;
+  $('drawerSaveBtn').hidden = !on;
+  // Card #4: textarea must always be enabled when edit mode is on.
+  $('updateText').disabled = !on;
+  if (on) setTimeout(() => $('updateText').focus(), 50);
+}
+
+async function saveLeadUpdate() {
+  if (!activeLead) return;
+  const note = $('updateText').value.trim();
+  const stage = $('editStage').value;
+  const heat = $('editHeat').value;
+  const nextStep = $('nextStep').value.trim();
+  // Allow saving if anything changed (note OR stage OR heat OR nextStep).
+  if (!note && stage === activeLead.stage && heat === activeLead.heat && !nextStep) {
+    setEditMode(false);
+    return;
+  }
+  const saveBtn = $('drawerSaveBtn');
+  saveBtn.disabled = true;
+  const origText = saveBtn.textContent;
+  saveBtn.textContent = 'שומר...';
+  try {
+    const r = await authedFetch('/api/leads', {
+      method: 'POST',
+      body: JSON.stringify({
+        action: 'updateNotes',
+        leadId: activeLead.id,
+        payload: {
+          note: note || undefined,
+          stage,
+          nextStep: nextStep || undefined,
+        },
+      }),
+    });
+    if (!r.ok) throw new Error(await r.text());
+    if (heat && heat !== activeLead.heat) {
+      await authedFetch('/api/leads', {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'changeHeat',
+          leadId: activeLead.id,
+          payload: { heat },
+        }),
+      });
+    }
+    closeDrawer();
+    await loadLeads();
+  } catch (err) {
+    alert('שגיאה בשמירה: ' + err.message);
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = origText;
+  }
+}
+
+// Wire drawer events once.
+function initDrawer() {
+  $('drawerClose').addEventListener('click', closeDrawer);
+  $('drawerOverlay').addEventListener('click', (e) => {
+    if (e.target.id === 'drawerOverlay') closeDrawer();
+  });
+  $('drawerEditBtn').addEventListener('click', () => setEditMode(true));
+  $('drawerCancelEditBtn').addEventListener('click', () => setEditMode(false));
+  $('drawerSaveBtn').addEventListener('click', saveLeadUpdate);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !$('drawerOverlay').hidden) closeDrawer();
+  });
+}
+initDrawer();
 
 $('addFirstBtn')?.addEventListener('click', async () => {
   const name = prompt('שם הליד החדש:');
