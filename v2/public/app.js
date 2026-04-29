@@ -187,17 +187,28 @@ function renderLeads(leads) {
   const me = (auth.currentUser?.email || '').toLowerCase();
   leads.forEach(lead => {
     const isSharedWithMe = lead.ownerEmail && lead.ownerEmail.toLowerCase() !== me;
+    const isOwnerWithShares = !isSharedWithMe
+      && Array.isArray(lead.sharedWith)
+      && lead.sharedWith.length > 0;
+    const sharedTooltip = (lead.sharedWith || []).join(', ');
     const card = document.createElement('div');
     card.className = 'lead-card heat-' + (lead.heat || 'normal');
     card.innerHTML = `
       <div class="row1">
-        <div class="name">${escapeHtml(lead.name)} <span class="badge">${lead.stage}</span>${isSharedWithMe ? '<span class="shared-badge" title="משותף איתך מאת ' + escapeHtml(lead.ownerEmail) + '">משותף 🤝</span>' : ''}</div>
+        <div class="name">${escapeHtml(lead.name)} <span class="badge">${lead.stage}</span>${
+          isSharedWithMe
+            ? '<span class="shared-badge" title="משותף איתך מאת ' + escapeHtml(lead.ownerEmail) + '">משותף 🤝</span>'
+            : isOwnerWithShares
+              ? '<span class="shared-badge owner" title="משותף עם ' + escapeHtml(sharedTooltip) + '">🤝 ' + lead.sharedWith.length + '</span>'
+              : ''
+        }</div>
         <div class="badge" style="background:${lead.heatColor};color:white;">${lead.heatLabel}</div>
       </div>
       <div class="meta">
         ${lead.dateFormatted}
         ${lead.isStale ? ' • <span class="stale">⚠️ לא עודכן ' + lead.daysSinceUpdate + ' ימים</span>' : ''}
         ${lead.contactEmail ? ' • ' + escapeHtml(lead.contactEmail) : ''}
+        ${lead.aiSummaryHe ? '<div style="margin-top:6px;font-size:12px;color:var(--muted);">' + escapeHtml(lead.aiSummaryHe) + '</div>' : ''}
       </div>
     `;
     card.addEventListener('click', () => openLead(lead));
