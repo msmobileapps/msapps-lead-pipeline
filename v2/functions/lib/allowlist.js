@@ -15,6 +15,9 @@ export const ALLOWLIST = [
   'michal@msapps.mobi',
   'bar.kadosh@msapps.mobi',
   'michal@opsagents.agency',
+  // Gmail fallback for Firebase Auth email-link delivery testing
+  // (Zoho is filtering noreply@opsagent-prod.firebaseapp.com — see BUG-LP-001).
+  'msmobileapps@gmail.com',
 ];
 
 export function isAllowlisted(email) {
