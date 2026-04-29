@@ -1,6 +1,41 @@
 # Lead pipeline — migrations
 
-## migrate-calendar-leads.mjs
+Two migration paths to Firestore leads — pick whichever auth your account allows.
+
+## ⭐ migrate-ical-leads.mjs (OAuth-free, recommended)
+
+Parses a `.ics` calendar export. **Zero Calendar API auth needed** — only
+Firestore write perms (covered by your existing gcloud ADC `cloud-platform`
+scope). Use this when Google blocks the Calendar OAuth scope on your account.
+
+### Get the .ics file
+
+1. Open Google Calendar → ⚙️ → **Settings**
+2. **Import & export** (left nav) → **Export** → downloads a `.zip`
+3. Unzip — you get one `.ics` per calendar (e.g. `msmobileapps@gmail.com.ics`)
+
+### Run
+
+```bash
+cd v2/migrate
+npm install   # one-time
+
+# Dry run first
+ICS_PATH="$HOME/Downloads/msmobileapps@gmail.com.ics" \
+  TARGET_OWNER_EMAIL=michal@msapps.mobi DRY_RUN=1 \
+  node migrate-ical-leads.mjs
+
+# Real import
+ICS_PATH="$HOME/Downloads/msmobileapps@gmail.com.ics" \
+  TARGET_OWNER_EMAIL=michal@msapps.mobi \
+  node migrate-ical-leads.mjs
+```
+
+Idempotent — re-running upserts in place by `source.eventId` (iCal UID).
+
+---
+
+## migrate-calendar-leads.mjs (live Google Calendar API)
 
 Imports Google Calendar events into Firestore as lead documents.
 
