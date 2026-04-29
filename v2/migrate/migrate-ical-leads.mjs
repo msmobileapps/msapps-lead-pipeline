@@ -68,21 +68,55 @@ const events = Object.values(parsed).filter((v) => v.type === 'VEVENT');
 console.log(`  parsed ${events.length} VEVENT entries`);
 
 // ── Helpers (mirrors migrate-calendar-leads.mjs)
-function inferStage(summary) {
-  const s = String(summary || '').toLowerCase();
-  if (/won|נסגר|הצלחה/.test(s)) return 'נסגר בהצלחה';
-  if (/lost|דחיתי|לא רלוונטי/.test(s)) return 'לא רלוונטי';
-  if (/proposal|הצעה/.test(s)) return 'נשלחה הצעה';
-  if (/negotiation|מו"מ|משא ומתן/.test(s)) return 'במשא ומתן';
-  if (/follow.?up|מחכה/.test(s)) return 'מחכה לתשובה';
-  return 'ליד חדש';
+
+// Stage classification — Michal's convention:
+//   * lone '0' in the description = new lead (only ~15 of 1700 events)
+//   * description usually contains a **סטטוס:** marker we can map
+//   * everything else = active/in-pipeline (default to פגישה/שיחה — they ARE
+//     calendar meetings)
+function inferStage(summary, description) {
+  const desc = String(description || '');
+  // Lone "0" anywhere in description = explicit "new lead" tag.
+  // Match a `0` not adjacent to other digits (avoids hits inside dates,
+  // phone numbers, money like "100"). Word boundaries don't help in Hebrew
+  // text, so we use a digit-adjacent lookaround.
+  if (/(?<![0-9])0(?![0-9])/.test(desc)) return 'ליד חדש';
+
+  // Try to map an explicit סטטוס marker.
+  const m = desc.match(/(?:^|\n|\*\*)\s*(?:סטטוס|status)\s*[:׃]\s*\**\s*([^*\n,]+)/i);
+  if (m) {
+    const status = m[1].toLowerCase().trim();
+    if (/בהצלחה|won|closed.*won/.test(status)) return 'נסגר בהצלחה';
+    if (/נסגר|לא רלוונטי|lost|cancelled/.test(status)) return 'לא רלוונטי';
+    if (/הצעת מחיר|proposal|quoted/.test(status)) return 'הצעת מחיר';
+    if (/מו["'״׳]?מ|משא ומתן|negotiat/.test(status)) return 'משא ומתן';
+    if (/ממתין|מחכה|waiting|pending/.test(status)) return 'ממתין לתשובה';
+    if (/פגישה|שיחה|meeting|call/.test(status)) return 'פגישה/שיחה';
+    if (/פנייה|reach\s?out|first/.test(status)) return 'פנייה ראשונה';
+    if (/ליד חדש|new lead/.test(status)) return 'ליד חדש';
+    // Fall through if status text didn't match any known pattern.
+  }
+
+  // Title-based (rare — Michal's titles are usually just names).
+  const t = String(summary || '').toLowerCase();
+  if (/won|נסגר בהצלחה/.test(t)) return 'נסגר בהצלחה';
+  if (/lost|דחיתי|לא רלוונטי/.test(t)) return 'לא רלוונטי';
+  if (/proposal|הצעת מחיר/.test(t)) return 'הצעת מחיר';
+  if (/negotiation|מו["'״׳]?מ|משא ומתן/.test(t)) return 'משא ומתן';
+  if (/follow.?up|מחכה|ממתין/.test(t)) return 'ממתין לתשובה';
+
+  // Default: active calendar meeting in the pipeline, stage unknown.
+  return 'פגישה/שיחה';
 }
-function inferHeat(summary) {
-  const s = String(summary || '').toLowerCase();
-  if (/hot|חם|🔥/.test(s)) return 'hot';
-  if (/upsale|upsell/.test(s)) return 'upsale';
-  if (/cold|קר/.test(s)) return 'cold';
-  if (/warm|פושר/.test(s)) return 'warm';
+
+// Heat classification — emoji and Hebrew first; English 'hot' is OUT because
+// "Hot" is a major Israeli telecom company name and produced false positives.
+function inferHeat(summary, description) {
+  const blob = (String(summary || '') + ' ' + String(description || '')).toLowerCase();
+  if (/🔴|🔥|חם(?![א-ת])/.test(blob)) return 'hot';
+  if (/🟢|upsale|upsell|אפסייל/.test(blob)) return 'upsale';
+  if (/⚪|🩶|cold|קר(?![א-ת])/.test(blob)) return 'cold';
+  if (/🟡|פושר|warm/.test(blob)) return 'warm';
   return 'normal';
 }
 function pickContact(attendees, organizer) {
@@ -112,16 +146,17 @@ for (const evt of events) {
 
   const contact = pickContact(evt.attendee, evt.organizer);
   const summary = String(evt.summary).trim();
+  const description = String(evt.description || '');
 
   const lead = {
     ownerEmail: TARGET_OWNER,
     name: summary,
-    stage: inferStage(summary),
-    heat: inferHeat(summary),
+    stage: inferStage(summary, description),
+    heat: inferHeat(summary, description),
     date: Timestamp.fromDate(start),
     contactEmail: contact.email,
     contactPhone: contact.phone,
-    rawNotes: String(evt.description || '').replace(/<[^>]+>/g, '').trim(),
+    rawNotes: description.replace(/<[^>]+>/g, '').trim(),
     updates: [],
     nextSteps: [],
     attachments: [],
