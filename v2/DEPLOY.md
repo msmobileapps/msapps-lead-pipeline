@@ -17,10 +17,17 @@ you've logged in, so this is a one-time step per machine.
 
 ## Deploy
 
+**Always use the script — never `firebase deploy` directly.** The script patches
+`public/app.js` with the live Firebase Web SDK config before uploading. A raw
+`firebase deploy` will ship a broken hosting bundle with `apiKey:'REPLACE_WITH_WEB_API_KEY'`.
+
 ```bash
 cd v2
 ./scripts/deploy-staging.sh
 ```
+
+The script has a pre-flight check that refuses to deploy if `public/app.js` still
+contains `REPLACE_WITH_` placeholders.
 
 The script:
 1. Checks firebase CLI auth — fails fast with instructions if missing.

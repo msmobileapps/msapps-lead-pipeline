@@ -97,6 +97,13 @@ app.write_text(src)
 print(f'  patched public/app.js with {patched} keys from live SDK config')
 PY
 
+# ─── Pre-flight: refuse to deploy with placeholder keys ───────────────────
+if grep -q 'REPLACE_WITH' public/app.js; then
+  echo "✖ public/app.js still has REPLACE_WITH_ placeholders after patch step."
+  echo "  Aborting — would deploy a broken app. Check firebase apps:sdkconfig output."
+  exit 2
+fi
+
 # ─── Deploy ───────────────────────────────────────────────────────────────
 echo "▶ firebase deploy"
 "$FB" deploy --only hosting,functions,firestore:rules,firestore:indexes --project "$PROJECT"
