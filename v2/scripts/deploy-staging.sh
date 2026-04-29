@@ -70,21 +70,31 @@ apps=data.get('result',[]) if isinstance(data,dict) else data
 print(apps[0]['appId'])" )"
 fi
 
-CONFIG_JSON="$( "$FB" apps:sdkconfig WEB "$WEB_APP_ID" --json )"
 echo "▶ web app id: $WEB_APP_ID"
+"$FB" apps:sdkconfig WEB "$WEB_APP_ID" --json > /tmp/fb-sdk-config.json
 
-python3 - <<PY
-import json, pathlib, re
-data = json.loads('''$CONFIG_JSON''')
+python3 <<'PY'
+import json, pathlib, re, sys
+raw = pathlib.Path('/tmp/fb-sdk-config.json').read_text()
+# Strip ANSI color codes that firebase CLI sometimes embeds.
+raw = re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', raw)
+data = json.loads(raw)
 sdk = data.get('result', data).get('sdkConfig', {})
+if not sdk:
+    print('  ! no sdkConfig in firebase apps:sdkconfig output:', list(data.keys()))
+    sys.exit(1)
 app = pathlib.Path('public/app.js')
 src = app.read_text()
 keys = ['apiKey','authDomain','projectId','storageBucket','appId','messagingSenderId']
+patched = 0
 for k in keys:
-  if k in sdk:
-    src = re.sub(rf"({k}:\s*)'[^']*'", lambda m: m.group(1)+repr(sdk[k]), src, count=1)
+    if k in sdk and sdk[k]:
+        new, n = re.subn(rf"({k}:\s*)'[^']*'", lambda m, v=sdk[k]: m.group(1)+repr(v), src, count=1)
+        if n:
+            src = new
+            patched += 1
 app.write_text(src)
-print('  patched public/app.js with live SDK config')
+print(f'  patched public/app.js with {patched} keys from live SDK config')
 PY
 
 # ─── Deploy ───────────────────────────────────────────────────────────────
