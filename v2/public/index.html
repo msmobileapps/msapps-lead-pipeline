@@ -182,6 +182,184 @@
     @media (max-width: 700px) {
       .stats { grid-template-columns: repeat(2, 1fr); }
     }
+
+    /* — Lead detail drawer (Cards #2 + #4) — */
+    /* #2 fix: drawer scroll-pads past sticky bottom bar so action row never clips. */
+    /* #4 fix: edit mode reveals an enabled textarea + "save update" button. */
+    .drawer-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(17, 24, 39, 0.45);
+      z-index: 100;
+    }
+    .drawer-overlay.open { display: block; }
+    .drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: min(560px, 100%);
+      background: var(--card);
+      box-shadow: -8px 0 24px rgba(0,0,0,0.12);
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.2s ease;
+    }
+    .drawer.open { transform: translateX(0); }
+    .drawer-head {
+      position: sticky;
+      top: 0;
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      z-index: 2;
+    }
+    .drawer-head h2 { margin: 0; font-size: 18px; }
+    .drawer-head .close {
+      border: none;
+      background: transparent;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--muted);
+      line-height: 1;
+    }
+    .drawer-body {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      padding: 16px 20px;
+      /* Card #2: extra bottom space so the last field is never hidden behind the action bar. */
+      padding-bottom: 120px;
+      -webkit-overflow-scrolling: touch;
+    }
+    .drawer-section { margin-bottom: 20px; }
+    .drawer-section h3 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .drawer-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .drawer-meta .badge {
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #f3f4f6;
+      font-size: 12px;
+    }
+    .drawer-notes {
+      white-space: pre-wrap;
+      font-size: 14px;
+      line-height: 1.5;
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      min-height: 60px;
+    }
+    .drawer-updates { display: flex; flex-direction: column; gap: 10px; }
+    .drawer-update {
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+    .drawer-update .when { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+
+    /* Card #4: edit form — textarea must always be writable when "Edit" is clicked. */
+    .drawer-edit-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .drawer-edit-form label {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 500;
+    }
+    .drawer-edit-form textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 14px;
+      direction: rtl;
+      resize: vertical;
+      background: white;
+      color: #111827;
+    }
+    .drawer-edit-form textarea:focus { border-color: var(--primary); outline: none; }
+    .drawer-edit-form textarea:disabled {
+      background: #f3f4f6;
+      color: #9ca3af;
+      cursor: not-allowed;
+    }
+    .drawer-edit-form .row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .drawer-edit-form select,
+    .drawer-edit-form input[type="text"] {
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 14px;
+      background: white;
+    }
+    .drawer-edit-form select { flex: 1 1 auto; }
+
+    .drawer-actions {
+      position: sticky;
+      bottom: 0;
+      background: var(--card);
+      border-top: 1px solid var(--border);
+      padding: 12px 20px;
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      z-index: 2;
+    }
+    .drawer-actions button {
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: white;
+      color: #111827;
+    }
+    .drawer-actions button.primary {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .drawer-actions button.primary:hover { background: var(--primary-hover); }
+    .drawer-actions button.primary:disabled { background: #9ca3af; border-color: #9ca3af; cursor: not-allowed; }
+    .drawer-actions button.danger { color: var(--hot); border-color: #fecaca; }
+
+    @media (max-width: 700px) {
+      .drawer { width: 100%; }
+    }
   </style>
 </head>
 <body>
@@ -223,6 +401,61 @@
         <button id="addFirstBtn" class="add-btn">הוסף ליד ראשון</button>
       </div>
     </main>
+  </div>
+
+  <!-- Lead detail drawer (Cards #2 + #4) -->
+  <div id="drawerOverlay" class="drawer-overlay" hidden>
+    <aside id="leadDrawer" class="drawer" role="dialog" aria-modal="true" aria-labelledby="drawerTitle">
+      <div class="drawer-head">
+        <div>
+          <h2 id="drawerTitle">—</h2>
+          <div class="drawer-meta">
+            <span class="badge" id="drawerStage">—</span>
+            <span class="badge" id="drawerHeat">—</span>
+            <span id="drawerDate">—</span>
+          </div>
+        </div>
+        <button class="close" id="drawerClose" aria-label="סגור">×</button>
+      </div>
+
+      <div class="drawer-body">
+        <section class="drawer-section">
+          <h3>הערות</h3>
+          <div id="drawerNotes" class="drawer-notes">(אין הערות)</div>
+        </section>
+
+        <section class="drawer-section">
+          <h3>עדכונים</h3>
+          <div id="drawerUpdates" class="drawer-updates"></div>
+        </section>
+
+        <section class="drawer-section" id="drawerEditSection" hidden>
+          <h3>ערוך ליד</h3>
+          <form class="drawer-edit-form" id="drawerEditForm">
+            <label for="updateText">עדכון חדש</label>
+            <textarea id="updateText" name="updateText" placeholder="כתוב כאן עדכון על השיחה / מצב הליד..."></textarea>
+            <div class="row">
+              <select id="editStage" name="stage" aria-label="שלב"></select>
+              <select id="editHeat" name="heat" aria-label="חום">
+                <option value="hot">חם</option>
+                <option value="warm">פושר</option>
+                <option value="normal">רגיל</option>
+                <option value="upsale">Upsale</option>
+                <option value="cold">קר</option>
+              </select>
+            </div>
+            <label for="nextStep">צעד הבא (אופציונלי)</label>
+            <input id="nextStep" name="nextStep" type="text" placeholder="למשל: לחזור אליו ביום שלישי" />
+          </form>
+        </section>
+      </div>
+
+      <div class="drawer-actions">
+        <button type="button" id="drawerEditBtn">ערוך</button>
+        <button type="button" id="drawerCancelEditBtn" hidden>בטל</button>
+        <button type="button" id="drawerSaveBtn" class="primary" hidden>שמור עדכון</button>
+      </div>
+    </aside>
   </div>
 
   <!-- Firebase SDK (CDN, modular) — loaded as ES module so app.js can import. -->
