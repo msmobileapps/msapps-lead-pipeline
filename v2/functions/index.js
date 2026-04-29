@@ -24,7 +24,7 @@ import { logger } from 'firebase-functions';
 
 import { ALLOWLIST, isAllowlisted } from './lib/allowlist.js';
 import { verifyRequest } from './lib/auth.js';
-import { docToLead, sortLeads, computeStats, STAGES, HEAT } from './lib/lead-mapper.js';
+import { docToLead, sortLeads, computeStats, STAGES, HEAT, mergeUnique } from './lib/lead-mapper.js';
 
 initializeApp();
 const db = getFirestore();
@@ -93,13 +93,27 @@ export const leads = onRequest(RUNTIME_OPTS, async (req, res) => {
   try {
     if (req.method === 'GET') {
       const search = (req.query.search || '').toString().trim().toLowerCase();
-      const snap = await db.collection('leads')
-        .where('ownerEmail', '==', ownerEmail)
-        .orderBy('date', 'desc')
-        .limit(parseInt(req.query.limit || '200', 10))
-        .get();
+      const limit = parseInt(req.query.limit || '200', 10);
 
-      let allLeads = snap.docs.map(docToLead);
+      // Two parallel queries: leads I own, leads shared with me. Merge by id.
+      // Firestore can't OR these in a single query, so we run both server-side.
+      const [ownedSnap, sharedSnap] = await Promise.all([
+        db.collection('leads')
+          .where('ownerEmail', '==', ownerEmail)
+          .orderBy('date', 'desc')
+          .limit(limit)
+          .get(),
+        db.collection('leads')
+          .where('sharedWith', 'array-contains', ownerEmail)
+          .orderBy('date', 'desc')
+          .limit(limit)
+          .get(),
+      ]);
+
+      const ownedLeads = ownedSnap.docs.map(docToLead);
+      const sharedLeads = sharedSnap.docs.map(docToLead).map((l) => ({ ...l, _shared: true }));
+      let allLeads = mergeUnique([...ownedLeads, ...sharedLeads], 'id');
+
       if (search) {
         allLeads = allLeads.filter(l =>
           l.name.toLowerCase().includes(search) ||
@@ -116,6 +130,8 @@ export const leads = onRequest(RUNTIME_OPTS, async (req, res) => {
         stats,
         total: sorted.length,
         ownerEmail,
+        ownedCount: ownedLeads.length,
+        sharedCount: sharedLeads.length,
         searchQuery: search || null,
         fetchedAt: new Date().toISOString(),
       });
@@ -150,7 +166,40 @@ export const leads = onRequest(RUNTIME_OPTS, async (req, res) => {
       const ref = db.collection('leads').doc(leadId);
       const snap = await ref.get();
       if (!snap.exists) return res.status(404).json({ error: 'Lead not found' });
-      if (snap.data().ownerEmail !== ownerEmail) return res.status(403).json({ error: 'Not yours' });
+      const leadData = snap.data();
+      const isOwner = leadData.ownerEmail === ownerEmail;
+      const isShared = Array.isArray(leadData.sharedWith) && leadData.sharedWith.includes(ownerEmail);
+      if (!isOwner && !isShared) return res.status(403).json({ error: 'Not yours' });
+
+      // Owner-only actions: share, unshare, delete, closeLead
+      if (['share', 'unshare', 'delete', 'closeLead'].includes(action) && !isOwner) {
+        return res.status(403).json({ error: `Action '${action}' is owner-only` });
+      }
+
+      if (action === 'share') {
+        const target = (payload.email || '').toLowerCase().trim();
+        if (!target) return res.status(400).json({ error: 'Missing email' });
+        if (!isAllowlisted(target)) {
+          return res.status(400).json({ error: `Email ${target} is not on the MSApps Leads allowlist` });
+        }
+        if (target === ownerEmail) {
+          return res.status(400).json({ error: 'Cannot share a lead with yourself' });
+        }
+        await ref.update({
+          sharedWith: FieldValue.arrayUnion(target),
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+        return res.json({ success: true, leadId, sharedWith: target, action: 'shared' });
+      }
+      if (action === 'unshare') {
+        const target = (payload.email || '').toLowerCase().trim();
+        if (!target) return res.status(400).json({ error: 'Missing email' });
+        await ref.update({
+          sharedWith: FieldValue.arrayRemove(target),
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+        return res.json({ success: true, leadId, sharedWith: target, action: 'unshared' });
+      }
 
       if (action === 'changeHeat') {
         await ref.update({ heat: payload.heat || 'normal', updatedAt: FieldValue.serverTimestamp() });

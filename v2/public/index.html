@@ -357,6 +357,82 @@
     .drawer-actions button.primary:disabled { background: #9ca3af; border-color: #9ca3af; cursor: not-allowed; }
     .drawer-actions button.danger { color: var(--hot); border-color: #fecaca; }
 
+    /* — Share section (Card #10) — */
+    .share-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .share-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: #eff6ff;
+      color: var(--primary);
+      border: 1px solid #bfdbfe;
+      border-radius: 999px;
+      font-size: 12px;
+    }
+    .share-chip .x {
+      cursor: pointer;
+      color: #6b7280;
+      font-weight: 700;
+      line-height: 1;
+      padding: 0 2px;
+      border-radius: 999px;
+    }
+    .share-chip .x:hover { color: var(--hot); background: #fee2e2; }
+    .share-chip.is-self { background: #f3f4f6; color: var(--muted); border-color: var(--border); }
+
+    .share-form {
+      display: flex;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .share-form input,
+    .share-form select {
+      flex: 1 1 auto;
+      padding: 8px 10px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 13px;
+      background: white;
+    }
+    .share-form button {
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--primary);
+      background: var(--primary);
+      color: white;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .share-form button:hover { background: var(--primary-hover); }
+    .share-form button:disabled { background: #9ca3af; border-color: #9ca3af; cursor: not-allowed; }
+    .share-error { color: var(--hot); font-size: 12px; margin-top: 4px; min-height: 14px; }
+    .share-readonly-note {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+      font-style: italic;
+    }
+    .lead-card .shared-badge {
+      display: inline-block;
+      padding: 1px 6px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: var(--primary);
+      font-size: 11px;
+      margin-inline-start: 6px;
+      vertical-align: middle;
+    }
+
     @media (max-width: 700px) {
       .drawer { width: 100%; }
     }
@@ -427,6 +503,19 @@
         <section class="drawer-section">
           <h3>עדכונים</h3>
           <div id="drawerUpdates" class="drawer-updates"></div>
+        </section>
+
+        <section class="drawer-section" id="drawerShareSection">
+          <h3>שיתוף ליד</h3>
+          <div id="drawerSharedWith" class="share-row" aria-label="משותף עם"></div>
+          <form class="share-form" id="drawerShareForm" hidden>
+            <select id="shareEmailSelect" aria-label="בחר משתמש לשיתוף"></select>
+            <button type="submit" id="shareAddBtn">הוסף</button>
+          </form>
+          <div id="shareError" class="share-error" role="alert" aria-live="polite"></div>
+          <div id="shareReadonlyNote" class="share-readonly-note" hidden>
+            🔒 הליד שותף איתך — רק הבעלים יכול לשנות שיתופים.
+          </div>
         </section>
 
         <section class="drawer-section" id="drawerEditSection" hidden>

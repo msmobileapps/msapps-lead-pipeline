@@ -16,6 +16,14 @@
         { "fieldPath": "stage",      "order": "ASCENDING" },
         { "fieldPath": "date",       "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "leads",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "sharedWith", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "date",       "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
